@@ -24,6 +24,7 @@ class TSPInstance(object):
         self.load_optdata(self.ideal_name)
         assert len(self.optimaltour) == len(self.x)
         self.city_num = len(self.optimaltour)
+        self.distance_graph = self.get_distance_graph()
 
     def load_dataset(self, filepath):
         """
@@ -88,8 +89,8 @@ class TSPInstance(object):
         deltaX = self.x[i] - self.x[j]
         deltaY = self.y[i] - self.y[j]
         return math.sqrt(pow(deltaX, 2) + pow(deltaY, 2))
-
-    def evaluate(self, tour):
+    
+    def get_tour_distance(self, tour):
         """
             returns the whole distance of the specific tour
         Args:
@@ -97,8 +98,8 @@ class TSPInstance(object):
         """
         dis = 0.0
         for i in range(self.city_num-1):
-            dis += self.get_distance(tour[i], tour[i+1])
-        dis += self.get_distance(tour[self.city_num-1], tour[0])
+            dis += self.distance_graph[tour[i]][tour[i+1]]
+        dis += self.distance_graph[tour[self.city_num-1]][tour[0]]
         return dis
 
     def get_distance_graph(self):
@@ -134,7 +135,7 @@ class TSPInstance(object):
         plt.ylabel('y label')
         plt.title("City access sequence diagram")
         plt.plot()
-        plt.savefig('projects/TSP/result/' + self.datasetName + '.png', bbox_inches='tight')
+        plt.savefig('./result/' + self.datasetName + '.png', bbox_inches='tight')
 
 
 if __name__ == "__main__":
@@ -144,4 +145,5 @@ if __name__ == "__main__":
     # print(instance.optimaltour)
     instance.plot_tour(instance.optimaltour)
     # print(instance.get_distance_graph())
+    assert instance.get_tour_distance(instance.optimaltour) == instance.evaluate(instance.optimaltour)
 
