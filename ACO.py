@@ -6,7 +6,11 @@ import sys
 import math
 import numpy as np
 
-(city_num, ant_num) = (50, 50)
+from tqdm import tqdm
+from TSPInstance import TSPInstance
+from utils import draw_quality
+
+# (city_num, ant_num) = (50, 50)
 # parameter
 # (ALPHA, BETA, RHO, Q) = (1.0, 2.0, 0.5, 100.0)
 # pheromone_graph = [[1.0 for _ in range(city_num)] for _ in range(city_num)]
@@ -17,26 +21,27 @@ class Ant(object):
     __ALPHA = 0.0
     __BETA = 0.0
     __Q = 1.0
+    __city_num = 0
 
-    def __init__(self, id, ALPHA, BETA, Q) -> None:
+    def __init__(self, city_num, ALPHA, BETA, Q) -> None:
         super().__init__()
-        self.id = id
-        Ant.setHyperparameter(ALPHA, BETA, Q)
+        Ant.setHyperparameter(city_num, ALPHA, BETA, Q)
         self.__initialize()
 
     def __initialize(self):
-        self.__current_city = random.randint(0, city_num-1)       # 随机初始化城市
+        self.__current_city = random.randint(0, Ant.get_city_num()-1)       # 随机初始化城市
         self.__path = [self.__current_city]                         # ant的轨迹
         self.__total_distance = 0.0
         self.__step = 1                                           # 移动次数
-        self.__avaliable_city = [True for i in range(city_num)]   # 未访问城市
+        self.__avaliable_city = [True for i in range(Ant.get_city_num())]   # 未访问城市
         self.__avaliable_city[self.__current_city] = False
 
     @classmethod
-    def setHyperparameter(cls, alpha, beta, Q):
+    def setHyperparameter(cls, city_num, alpha, beta, Q):
         cls.__ALPHA = alpha
         cls.__BETA = beta
         cls.__Q = Q
+        cls.__city_num = city_num
 
     @classmethod
     def getAlpha(cls):
@@ -53,8 +58,12 @@ class Ant(object):
             _type_: The pheromone released by the ant cycle once 
         """
         return cls.__Q
+    
+    @classmethod
+    def get_city_num(cls):
+        return cls.__city_num
 
-    def rand_choose(self, p):
+    def __rand_choose(self, p):
         """
             Roulette for choosing city
         Args:
@@ -77,14 +86,15 @@ class Ant(object):
             distance_graph (np.array[[]]): [city_num, city_num]
             pheromone_graph (np.array[[]]): [city_num, city_num]
         """
-        select_cities_prob = [0.0 for _ in range(city_num)]
+        select_cities_prob = [0.0 for _ in range(Ant.get_city_num())]
 
-        for i in range(city_num):
+        for i in range(Ant.get_city_num()):
             if self.__avaliable_city[i] is True:
                 try:
                     # the probability is proportional to pheromone, inversely proportional to distance
+                    # denominator can't be 0
                     select_cities_prob[i] = pow(pheromone_graph[self.__current_city][i], Ant.getAlpha()) * pow(
-                        1.0/pow(distance_graph[self.__current_city][i]), Ant.getBeta())
+                        1.0/(distance_graph[self.__current_city][i]+0.00001),Ant.getBeta())
                 except ZeroDivisionError as e:
                     print('Ant ID: {ID}, current city: {current}, target city: {target}'.format(
                         ID=self.ID, current=self.__current_city, target=i))
@@ -92,7 +102,7 @@ class Ant(object):
         select_cities_prob = np.array(select_cities_prob)
         select_cities_prob = select_cities_prob / \
             np.sum(select_cities_prob)  # normalization
-        next_city = self.rand_choose(self, select_cities_prob)
+        next_city = self.__rand_choose(select_cities_prob)
         return next_city
 
     def __move(self, next_city, distance):
@@ -112,18 +122,18 @@ class Ant(object):
         """
             release pheromone on the road
         """
-        self.__pheromone = np.zeros([len(self.__path), len(self.__path)])
+        pheromone = np.zeros([len(self.__path), len(self.__path)])
         for i in range(len(self.__path)-1):
             cur_city = self.__path[i]
             next_city = self.__path[i+1]
-            self.__pheromone[cur_city][next_city] = Ant.getQ() / \
+            pheromone[cur_city][next_city] = Ant.getQ() / \
                 self.__total_distance
-            self.__pheromone[next_city][cur_city] = self.__pheromone[cur_city][next_city]
-        self.__pheromone[0][self.__path[-1]] = Ant.getQ() / \
+            pheromone[next_city][cur_city] = pheromone[cur_city][next_city]
+        pheromone[0][self.__path[-1]] = Ant.getQ() / \
             self.__total_distance
-        self.__pheromone[self.__path[-1]][0] = Ant.getQ() / \
+        pheromone[self.__path[-1]][0] = Ant.getQ() / \
             self.__total_distance
-        return self.__pheromone
+        return pheromone
 
     def run(self, distance_graph, pheromone_graph):
         """
@@ -138,7 +148,7 @@ class Ant(object):
         """
         self.__initialize()
         # search all the cities
-        while self.__step < city_num:
+        while self.__step < Ant.get_city_num():
             next_city = self.__choose_next_city(
                 distance_graph, pheromone_graph)
             self.__move(
@@ -149,14 +159,19 @@ class Ant(object):
 
 
 class ACO(object):
-    def __init__(self, distance_graph) -> None:
+    def __init__(self, dirpath = '/mnt/4ta/gzzhan/projects/TSP/dataset/', datasetName = 'a280') -> None:
+        self.__tspInstance = TSPInstance(dirpath, datasetName)
+        self.__dataset = datasetName
+
         self.__iter = 500
         self.__ant_num = 50   # the number of ants
         self.__alpha = 1      # Pheromone importance factor
         self.__beta = 2       # Important factor of heuristic function
         self.__rho = 0.1      # Pheromone volatilization factor
-        self.__Q = 1.0
-        self.__city_num = len(distance_graph)
+        self.__Q = 100.0
+        self.generate_ants_population()
+
+        self.__city_num = len(self.__tspInstance.get_distance_graph())
         self.__pheromone_graph = np.ones(
             [self.__city_num, self.__city_num])    # 全0初始化会在轮盘赌时出错
 
@@ -166,24 +181,29 @@ class ACO(object):
         """
         self.__ants = []
         for i in range(self.__ant_num):
-            self.__ants.append(Ant(self.__alpha, self.__beta, self.__Q))
+            self.__ants.append(Ant(self.__tspInstance.city_num,self.__alpha, self.__beta, self.__Q))
 
     def run(self):
         best_path = None
         shortest_distance = math.inf
-        for epoch in range(self.__iter):
+        quality = []
+        for epoch in tqdm(range(1, self.__iter+1)):
             release_pheromone = []
             for ant in self.__ants:
                 path, total_distance, pheromone = ant.run(
-                    self.__city_num, self.__pheromone_graph)
+                    self.__tspInstance.get_distance_graph(), self.__pheromone_graph)
                 release_pheromone.append(pheromone)
                 if total_distance < shortest_distance:
                     shortest_distance = total_distance
                     best_path = path
             # update pheromone graph
             self.__pheromone_graph = (1-self.__rho) * self.__pheromone_graph + np.vstack(
-                release_pheromone).reshape(self.__ant_num, self.__city_num, self.__city_num).sum(axis=2)
-
+                release_pheromone).reshape(self.__ant_num, self.__city_num, self.__city_num).sum(axis=0)
+            quality.append(shortest_distance/self.__tspInstance.optTourDistance)
+            if epoch % 50 == 0:
+                self.__tspInstance.plot_tour(tour = path,name = 'Epoch '+ str(epoch))
+        draw_quality(quality, './result/' + self.__dataset +'/', self.__dataset)
 
 if __name__ == '__main__':
-    ant = Ant(1, 0.1, 0.2)
+    aco = ACO()
+    aco.run()
