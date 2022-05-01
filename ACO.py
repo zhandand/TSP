@@ -1,12 +1,15 @@
 """
 解决TSP问题的蚁群算法（Ant Colony Optimization）
 """
+import math
 import random
 import sys
-import math
-import numpy as np
+from multiprocessing import Pool
+from importlib_metadata import re
 
+import numpy as np
 from tqdm import tqdm
+
 from TSPInstance import TSPInstance
 from utils import draw_quality
 
@@ -29,11 +32,13 @@ class Ant(object):
         self.__initialize()
 
     def __initialize(self):
-        self.__current_city = random.randint(0, Ant.get_city_num()-1)       # 随机初始化城市
+        self.__current_city = random.randint(
+            0, Ant.get_city_num()-1)       # 随机初始化城市
         self.__path = [self.__current_city]                         # ant的轨迹
         self.__total_distance = 0.0
         self.__step = 1                                           # 移动次数
-        self.__avaliable_city = [True for i in range(Ant.get_city_num())]   # 未访问城市
+        self.__avaliable_city = [
+            True for i in range(Ant.get_city_num())]   # 未访问城市
         self.__avaliable_city[self.__current_city] = False
 
     @classmethod
@@ -58,7 +63,7 @@ class Ant(object):
             _type_: The pheromone released by the ant cycle once 
         """
         return cls.__Q
-    
+
     @classmethod
     def get_city_num(cls):
         return cls.__city_num
@@ -94,7 +99,7 @@ class Ant(object):
                     # the probability is proportional to pheromone, inversely proportional to distance
                     # denominator can't be 0
                     select_cities_prob[i] = pow(pheromone_graph[self.__current_city][i], Ant.getAlpha()) * pow(
-                        1.0/(distance_graph[self.__current_city][i]+0.00001),Ant.getBeta())
+                        1.0/(distance_graph[self.__current_city][i]+0.00001), Ant.getBeta())
                 except ZeroDivisionError as e:
                     print('Ant ID: {ID}, current city: {current}, target city: {target}'.format(
                         ID=self.ID, current=self.__current_city, target=i))
@@ -159,29 +164,41 @@ class Ant(object):
 
 
 class ACO(object):
-    def __init__(self, dirpath = '/mnt/4ta/gzzhan/projects/TSP/dataset/', datasetName = 'a280') -> None:
+    def __init__(self, dirpath='/mnt/4ta/gzzhan/projects/TSP/dataset/', datasetName='a280') -> None:
         self.__tspInstance = TSPInstance(dirpath, datasetName)
         self.__dataset = datasetName
 
         self.__iter = 500
         self.__ant_num = 50   # the number of ants
-        self.__alpha = 1      # Pheromone importance factor
+        self.__alpha = 2      # Pheromone importance factor
         self.__beta = 2       # Important factor of heuristic function
         self.__rho = 0.1      # Pheromone volatilization factor
         self.__Q = 100.0
-        self.generate_ants_population()
+        self.__generate_ants_population()
 
         self.__city_num = len(self.__tspInstance.get_distance_graph())
         self.__pheromone_graph = np.ones(
             [self.__city_num, self.__city_num])    # 全0初始化会在轮盘赌时出错
 
-    def generate_ants_population(self):
+    def __generate_ants_population(self):
         """
             generate ants population
         """
         self.__ants = []
         for i in range(self.__ant_num):
-            self.__ants.append(Ant(self.__tspInstance.city_num,self.__alpha, self.__beta, self.__Q))
+            self.__ants.append(
+                Ant(self.__tspInstance.city_num, self.__alpha, self.__beta, self.__Q))
+
+    def __single_ant_run(self, ant_id):
+        """
+            for multiple process
+        Args:
+            ant_id (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        return self.__ants[ant_id].run
 
     def run(self):
         best_path = None
@@ -189,20 +206,46 @@ class ACO(object):
         quality = []
         for epoch in tqdm(range(1, self.__iter+1)):
             release_pheromone = []
+            all_path = []
+            all_distance = []
+            # tandem
+            # for ant in self.__ants:
+            #     path, total_distance, pheromone = ant.run(
+            #         self.__tspInstance.get_distance_graph(), self.__pheromone_graph)
+            #     release_pheromone.append(pheromone)
+            #     if total_distance < shortest_distance:
+            #         shortest_distance = total_distance
+            #         best_path = path
+
+            # Parallel
+            p = Pool(5)
+            results = []
             for ant in self.__ants:
-                path, total_distance, pheromone = ant.run(
-                    self.__tspInstance.get_distance_graph(), self.__pheromone_graph)
+                result = p.apply_async(ant.run, args=(
+                    self.__tspInstance.get_distance_graph(), self.__pheromone_graph))
+                results.append(result)
+            for res in results:
+                path, total_distance, pheromone = res.get()
                 release_pheromone.append(pheromone)
                 if total_distance < shortest_distance:
                     shortest_distance = total_distance
                     best_path = path
+            
             # update pheromone graph
             self.__pheromone_graph = (1-self.__rho) * self.__pheromone_graph + np.vstack(
                 release_pheromone).reshape(self.__ant_num, self.__city_num, self.__city_num).sum(axis=0)
-            quality.append(shortest_distance/self.__tspInstance.optTourDistance)
+            quality.append(shortest_distance /
+                           self.__tspInstance.optTourDistance)
             if epoch % 50 == 0:
-                self.__tspInstance.plot_tour(tour = path,name = 'Epoch '+ str(epoch))
-        draw_quality(quality, './result/' + self.__dataset +'/', self.__dataset)
+                self.__tspInstance.plot_tour(
+                    tour=path, name='Epoch ' + str(epoch))
+                print("-"*20 + " epoch " + str(epoch) + "-"*20)
+                print('quality: {}'.format(shortest_distance /
+                                           self.__tspInstance.optTourDistance))
+
+        draw_quality(quality, './result/' +
+                     self.__dataset + '/', self.__dataset)
+
 
 if __name__ == '__main__':
     aco = ACO()

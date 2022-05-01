@@ -141,11 +141,11 @@ class TSPInstance(object):
         plt.xlabel('x')
         plt.ylabel('y')
         plt.title("City access sequence @" + name)
-        plt.plot()
         if not os.path.exists('./result/' + self.datasetName):
             os.mkdir('./result/' + self.datasetName)
         plt.savefig('./result/' + self.datasetName + '/@' +
                     name + '.png', bbox_inches='tight')
+        plt.cla()
 
 
 if __name__ == "__main__":
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     # print(instance.citynum)
     print(instance.optTourDistance)
     # print(instance.optimaltour)
-    instance.plot_tour(instance.optimaltour)
+    # instance.plot_tour(instance.optimaltour)
     # print(instance.get_distance_graph())
     # assert instance.get_tour_distance(
     #     instance.optimaltour) == instance.evaluate(instance.optimaltour)
