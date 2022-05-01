@@ -164,7 +164,7 @@ class Ant(object):
 
 
 class ACO(object):
-    def __init__(self, dirpath='/mnt/4ta/gzzhan/projects/TSP/dataset/', datasetName='a280') -> None:
+    def __init__(self, dirpath='./dataset/', datasetName='a280') -> None:
         self.__tspInstance = TSPInstance(dirpath, datasetName)
         self.__dataset = datasetName
 

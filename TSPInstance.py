@@ -149,7 +149,7 @@ class TSPInstance(object):
 
 
 if __name__ == "__main__":
-    instance = TSPInstance('/mnt/4ta/gzzhan/projects/TSP/dataset/', 'a280')
+    instance = TSPInstance('dataset/', 'a280')
     # print(instance.citynum)
     print(instance.optTourDistance)
     # print(instance.optimaltour)
