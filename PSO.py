@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from TSPInstance import TSPInstance
+from utils import draw_quality
 
 
 class PSO(object):
@@ -12,8 +13,9 @@ class PSO(object):
         self.__dataset = datasetName
         self.num_city = self.__tspInstance.city_num  # 城市数
         self.location = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))  # 城市的位置坐标
-        self.iter_max = 500  # 迭代数目
-        self.num = 2000  # 粒子数目
+        self.iter_max = 50  # 迭代数目
+        self.num = 200  # 粒子数目
+        self.__iter=self.iter_max
         # 计算距离矩阵
         self.dis_mat = self.compute_dis_mat(self.num_city, self.location)  # 计算城市之间的距离矩阵
 
@@ -218,4 +220,16 @@ class PSO(object):
 
 if __name__ == "__main__":
     pso = PSO()
-    pso.run()
+    Best_path, Best =pso.run()
+    print(Best_path)
+    Best_path = np.vstack([Best_path, Best_path[0]])
+    fig, axs = plt.subplots(2, 1, sharex=False, sharey=False)
+    axs[0].scatter(Best_path[:, 0], Best_path[:, 1])
+    Best_path = np.vstack([Best_path, Best_path[0]])
+    axs[0].plot(Best_path[:, 0], Best_path[:, 1])
+    axs[0].set_title('result')
+    iterations = pso.iter_x
+    best_record = pso.iter_y
+    axs[1].plot(iterations, best_record)
+    axs[1].set_title('plot')
+    plt.show()
