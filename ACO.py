@@ -168,7 +168,7 @@ class ACO(object):
         self.__tspInstance = TSPInstance(dirpath, datasetName)
         self.__dataset = datasetName
 
-        self.__iter = 500
+        self.__iter = 150
         self.__ant_num = 50   # the number of ants
         self.__alpha = 2      # Pheromone importance factor
         self.__beta = 2       # Important factor of heuristic function
@@ -201,13 +201,11 @@ class ACO(object):
         return self.__ants[ant_id].run
 
     def run(self):
-        best_path = None
-        shortest_distance = math.inf
         quality = []
         for epoch in tqdm(range(1, self.__iter+1)):
+            best_path = None
+            shortest_distance = math.inf
             release_pheromone = []
-            all_path = []
-            all_distance = []
             # tandem
             # for ant in self.__ants:
             #     path, total_distance, pheromone = ant.run(
@@ -230,15 +228,15 @@ class ACO(object):
                 if total_distance < shortest_distance:
                     shortest_distance = total_distance
                     best_path = path
-            
+
             # update pheromone graph
             self.__pheromone_graph = (1-self.__rho) * self.__pheromone_graph + np.vstack(
                 release_pheromone).reshape(self.__ant_num, self.__city_num, self.__city_num).sum(axis=0)
             quality.append(shortest_distance /
                            self.__tspInstance.optTourDistance)
-            if epoch % 50 == 0:
+            if epoch % 20 == 0 or (epoch < 20 and epoch % 4 == 0):
                 self.__tspInstance.plot_tour(
-                    tour=path, name='Epoch ' + str(epoch))
+                    tour=best_path, name='@Epoch ' + str(epoch))
                 print("-"*20 + " epoch " + str(epoch) + "-"*20)
                 print('quality: {}'.format(shortest_distance /
                                            self.__tspInstance.optTourDistance))
@@ -248,5 +246,8 @@ class ACO(object):
 
 
 if __name__ == '__main__':
-    aco = ACO()
-    aco.run()
+    datasets = ['a280', 'att48', 'berlin52']
+    for dataset in datasets:
+        print("-"*20 + dataset + "-"*20)
+        aco = ACO(datasetName=dataset)
+        aco.run()

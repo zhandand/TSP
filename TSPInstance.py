@@ -26,6 +26,7 @@ class TSPInstance(object):
         assert len(self.optimaltour) == len(self.x)
         self.city_num = len(self.optimaltour)
         self.distance_graph = self.get_distance_graph()
+        self.plot_opt_tour()
 
     def load_dataset(self, filepath):
         """
@@ -56,8 +57,15 @@ class TSPInstance(object):
         with open(filepath, "r") as f:
             data = f.readlines()
         self.optimaltour = []
-        for line in data[4:-1]:
-            self.optimaltour.append(int(line)-1)
+        prefixEnd = False
+        for line in data:
+            if line == '-1\n':
+                break
+            if line == 'TOUR_SECTION\n':
+                prefixEnd = True
+                continue
+            if prefixEnd == True:
+                self.optimaltour.append(int(line)-1)
         self.optimaltour = np.array(self.optimaltour)
 
     @property
@@ -118,6 +126,12 @@ class TSPInstance(object):
                 distance_graph[j][i] = distance_graph[i][j]
         return distance_graph
 
+    def plot_opt_tour(self):
+        """
+            plot the optimal tour
+        """
+        self.plot_tour(self.optimaltour, 'optimal')
+
     def plot_tour(self, tour, name):
         """
             draw the path of the tour
@@ -143,7 +157,7 @@ class TSPInstance(object):
         plt.title("City access sequence @" + name)
         if not os.path.exists('./result/' + self.datasetName):
             os.mkdir('./result/' + self.datasetName)
-        plt.savefig('./result/' + self.datasetName + '/@' +
+        plt.savefig('./result/' + self.datasetName + '/' +
                     name + '.png', bbox_inches='tight')
         plt.cla()
 
