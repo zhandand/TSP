@@ -11,8 +11,9 @@ class Evaluation(object):
     def __init__(self, dirpath='./dataset/', datasetName='a280', modelType="PSO") -> None:
         self.__tspInstance = TSPInstance(dirpath, datasetName)
         if modelType == "PSO":
-            start = timeit.default_timer()
             self.__model = PSO(self.__tspInstance)
+            start = timeit.default_timer()
+            self.__model.run()
             end = timeit.default_timer()
             # Best_path, Best = self.__model.run()
             array = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))
@@ -21,6 +22,7 @@ class Evaluation(object):
             self.draw_path("PSO", self.__model.location[self.__model.best_path])
             self.draw_path("OPT", array[self.__tspInstance.optimaltour])
             self.get_time(start, end)
+            self.draw_iter("PSO", self.__model.iter_x, self.__model.iter_y)
             # self.draw_path("OPT", self.__tspInstance.get_distance_graph)
         elif modelType == "ACO":
             print("ACO")
@@ -53,6 +55,12 @@ class Evaluation(object):
         print("程序运行时间：%.2fs" % (end - start))
         plt.show()
 
+    def draw_iter(self, title, iterations, best_record):
+        fig, axs = plt.subplots(1, 1, sharex=False, sharey=False)
+        axs.plot(iterations, best_record)
+        axs.set_title(title)
+        plt.show()
+
 
 if __name__ == "__main__":
-    evaluator = Evaluation()
+    evaluator = Evaluation(datasetName='st70', modelType="PSO")

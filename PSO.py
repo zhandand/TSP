@@ -12,7 +12,7 @@ class PSO(object):
         self.__tspInstance = tsp
         self.num_city = self.__tspInstance.city_num  # 城市数
         self.location = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))  # 城市的位置坐标
-        self.iter_max = 50  # 迭代数目
+        self.iter_max = 500  # 迭代数目
         self.num = 200  # 粒子数目
         self.__iter=self.iter_max
         # 计算距离矩阵
@@ -220,7 +220,6 @@ class PSO(object):
 if __name__ == "__main__":
     pso = PSO()
     Best_path, Best =pso.run()
-    print(Best_path)
     Best_path = np.vstack([Best_path, Best_path[0]])
     fig, axs = plt.subplots(2, 1, sharex=False, sharey=False)
     axs[0].scatter(Best_path[:, 0], Best_path[:, 1])

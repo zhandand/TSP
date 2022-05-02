@@ -1,5 +1,4 @@
 NAME : att48.opt.tour
-COMMENT : Optimum solution  for att48   
 TYPE : TOUR
 DIMENSION : 48
 TOUR_SECTION
@@ -52,4 +51,3 @@ TOUR_SECTION
 40
 9
 -1
-EOF
