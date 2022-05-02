@@ -8,9 +8,8 @@ from utils import draw_quality
 
 
 class PSO(object):
-    def __init__(self, dirpath='./dataset/', datasetName='a280'):
-        self.__tspInstance = TSPInstance(dirpath, datasetName)
-        self.__dataset = datasetName
+    def __init__(self, tsp):
+        self.__tspInstance = tsp
         self.num_city = self.__tspInstance.city_num  # 城市数
         self.location = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))  # 城市的位置坐标
         self.iter_max = 50  # 迭代数目
