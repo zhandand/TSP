@@ -11,7 +11,7 @@ import numpy as np
 from tqdm import tqdm
 
 from TSPInstance import TSPInstance
-from utils import draw_quality
+from utils import draw_quality, timer
 
 # (city_num, ant_num) = (50, 50)
 # parameter
@@ -200,6 +200,7 @@ class ACO(object):
         """
         return self.__ants[ant_id].run
 
+    @timer
     def run(self):
         quality = []
         for epoch in tqdm(range(1, self.__iter+1)):
@@ -246,7 +247,8 @@ class ACO(object):
 
 
 if __name__ == '__main__':
-    datasets = ['a280', 'att48', 'berlin52']
+    # datasets = ['a280', 'att48', 'berlin52']
+    datasets = [ 'att48', 'berlin52']
     for dataset in datasets:
         print("-"*20 + dataset + "-"*20)
         aco = ACO(datasetName=dataset)

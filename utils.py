@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 def draw_quality(quality, filepath, dataset):
     """
-
     Args:
         quality (_type_): _description_
     """
@@ -15,4 +14,21 @@ def draw_quality(quality, filepath, dataset):
     plt.xlabel('epoch')
     plt.ylabel('quality')
     plt.title(dataset)
-    plt.savefig(filepath + dataset +'.png', bbox_inches='tight')
+    plt.savefig(filepath + dataset + '.png', bbox_inches='tight')
+
+
+def timer(func):
+    """
+    timer for func
+    Args:
+        func (_type_): _description_
+    """
+    def func_wrapper(*args, **kwargs):
+        from time import time
+        time_start = time()
+        result = func(*args, **kwargs)
+        time_end = time()
+        time_spend = time_end - time_start
+        print(' cost time {.2f} s\n'.format(time_spend))
+        return result
+    return func_wrapper
