@@ -17,6 +17,7 @@ class Evaluation(object):
         self.__tspInstance = TSPInstance(dirpath, datasetName)
         coordinates = np.transpose(
             np.vstack((self.__tspInstance.x, self.__tspInstance.y)))
+        print("{} is running on {}".format(modelType, datasetName))
         if modelType == "PSO":
             self.__model = PSO(self.__tspInstance)
             # ! 建议在模型的run方法中使用timer装饰器
@@ -54,9 +55,21 @@ class Evaluation(object):
 
             self.draw_tour(
                 coordinates[self.__model.paths[i]], "City access sequence @best", "best")
+        elif modelType == "Annealing":
+            # todo: write your program here
+            pass
 
     def evaluate_cost(self, cur, opt):
-        print("估计最小的总代价: %.2f 目前最优的总代价: %.2f 最佳quality: %.2f " % (cur, opt, cur / opt))
+        """
+            print distance then save in file
+        Args:
+            cur (_type_): current distance
+            opt (_type_): optimal distance
+        """
+        str = "估计最小的总代价: %.2f 目前最优的总代价: %.2f 最佳quality: %.2f " % (cur, opt, cur / opt)
+        print(str)
+        with open(self.result_path + '/ log.txt', mode='w', encoding='utf-8') as f:
+            f.write(str)
 
     def draw_tour(self, tour, title, filename):
         """
@@ -68,7 +81,7 @@ class Evaluation(object):
         """
         tour = np.vstack([tour, tour[0]])  # 形成回路
         fig, axs = plt.subplots(1, 1, sharex=False, sharey=False)
-        axs.scatter(tour[:, 0], tour[:, 1])
+        axs.scatter(tour[:, 0], tour[:, 1], s =10)
         axs.plot(tour[:, 0], tour[:, 1])
         axs.set_title(title)
         plt.show()
@@ -119,7 +132,7 @@ class Evaluation(object):
 
 if __name__ == "__main__":
     # evaluator = Evaluation(datasetName='st70', modelType="PSO")
-    datasets = ['att48', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
+    datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
     'kroC100', 'kroD100','st70']
     for dataset in datasets:
         evaluator = Evaluation(datasetName=dataset, modelType="ACO")

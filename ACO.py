@@ -202,27 +202,27 @@ class ACO(object):
             shortest_distance = math.inf
             release_pheromone = []
             # tandem
-            # for ant in self.__ants:
-            #     path, total_distance, pheromone = ant.run(
-            #         self.__tspInstance.get_distance_graph(), self.__pheromone_graph)
-            #     release_pheromone.append(pheromone)
-            #     if total_distance < shortest_distance:
-            #         shortest_distance = total_distance
-            #         best_path = path
-
-            # Parallel
-            p = Pool(5)
-            results = []
             for ant in self.__ants:
-                result = p.apply_async(ant.run, args=(
-                    self.__tspInstance.get_distance_graph(), self.__pheromone_graph))
-                results.append(result)
-            for res in results:
-                path, total_distance, pheromone = res.get()
+                path, total_distance, pheromone = ant.run(
+                    self.__tspInstance.get_distance_graph(), self.__pheromone_graph)
                 release_pheromone.append(pheromone)
                 if total_distance < shortest_distance:
                     shortest_distance = total_distance
                     best_path = path
+
+            # Parallel
+            # p = Pool(5)
+            # results = []
+            # for ant in self.__ants:
+            #     result = p.apply_async(ant.run, args=(
+            #         self.__tspInstance.get_distance_graph(), self.__pheromone_graph))
+            #     results.append(result)
+            # for res in results:
+            #     path, total_distance, pheromone = res.get()
+            #     release_pheromone.append(pheromone)
+            #     if total_distance < shortest_distance:
+            #         shortest_distance = total_distance
+            #         best_path = path
 
             # update pheromone graph
             self.__pheromone_graph = (1-self.__rho) * self.__pheromone_graph + np.vstack(
