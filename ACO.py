@@ -164,9 +164,8 @@ class Ant(object):
 
 
 class ACO(object):
-    def __init__(self, dirpath='./dataset/', datasetName='a280') -> None:
-        self.__tspInstance = TSPInstance(dirpath, datasetName)
-        self.__dataset = datasetName
+    def __init__(self, tspInstance) -> None:
+        self.__tspInstance = tspInstance
 
         self.__iter = 150
         self.__ant_num = 50   # the number of ants
@@ -179,6 +178,13 @@ class ACO(object):
         self.__city_num = len(self.__tspInstance.get_distance_graph())
         self.__pheromone_graph = np.ones(
             [self.__city_num, self.__city_num])    # 全0初始化会在轮盘赌时出错
+        # 每一轮迭代的current distance / optimal distance
+        self.quality = []
+        self.global_opt_distance = math.inf         # 所有epoch中最短距离
+        self.global_opt_path = None                # 所有epoch中最好的path
+
+        self.epoch = []             # 指定的epoch
+        self.paths = []             # 指定epoch对应的tour，作画图用
 
     def __generate_ants_population(self):
         """
@@ -189,20 +195,8 @@ class ACO(object):
             self.__ants.append(
                 Ant(self.__tspInstance.city_num, self.__alpha, self.__beta, self.__Q))
 
-    def __single_ant_run(self, ant_id):
-        """
-            for multiple process
-        Args:
-            ant_id (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        return self.__ants[ant_id].run
-
     @timer
     def run(self):
-        quality = []
         for epoch in tqdm(range(1, self.__iter+1)):
             best_path = None
             shortest_distance = math.inf
@@ -233,23 +227,28 @@ class ACO(object):
             # update pheromone graph
             self.__pheromone_graph = (1-self.__rho) * self.__pheromone_graph + np.vstack(
                 release_pheromone).reshape(self.__ant_num, self.__city_num, self.__city_num).sum(axis=0)
-            quality.append(shortest_distance /
-                           self.__tspInstance.optTourDistance)
+            quality = shortest_distance / self.__tspInstance.optTourDistance
+            self.quality.append(quality)
+            if self.global_opt_distance / self.__tspInstance.optTourDistance > quality:
+                self.global_opt_distance = shortest_distance
+                self.global_opt_path = path
             if epoch % 20 == 0 or (epoch < 20 and epoch % 4 == 0):
-                self.__tspInstance.plot_tour(
-                    tour=best_path, name='@Epoch ' + str(epoch))
+                self.epoch.append(epoch)
+                self.paths.append(best_path)
+                # self.__tspInstance.plot_tour(
+                #     tour=best_path, name='@Epoch ' + str(epoch))
                 print("-"*20 + " epoch " + str(epoch) + "-"*20)
-                print('quality: {}'.format(shortest_distance /
-                                           self.__tspInstance.optTourDistance))
+                print('quality: {}'.format(quality))
 
-        draw_quality(quality, './result/' +
-                     self.__dataset + '/', self.__dataset)
+        # draw_quality(quality, './result/' +
+        #              self.__dataset + '/', self.__dataset)
 
 
 if __name__ == '__main__':
     # datasets = ['a280', 'att48', 'berlin52']
-    datasets = [ 'att48', 'berlin52']
+    datasets = ['att48', 'berlin52']
     for dataset in datasets:
         print("-"*20 + dataset + "-"*20)
-        aco = ACO(datasetName=dataset)
+        tspInstance = TSPInstance(dataset)
+        aco = ACO(tspInstance)
         aco.run()

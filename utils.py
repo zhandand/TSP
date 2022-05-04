@@ -29,6 +29,6 @@ def timer(func):
         result = func(*args, **kwargs)
         time_end = time()
         time_spend = time_end - time_start
-        print(' cost time {.2f} s\n'.format(time_spend))
+        print('cost time {:.2f} s\n'.format(time_spend))
         return result
     return func_wrapper
