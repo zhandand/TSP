@@ -1,14 +1,18 @@
 import timeit
 
+from async_timeout import sys
+
 from PSO import PSO
 from TSPInstance import TSPInstance
 import matplotlib.pyplot as plt
+import os
 
 import numpy as np
 
 
 class Evaluation(object):
     def __init__(self, dirpath='./dataset/', datasetName='a280', modelType="PSO") -> None:
+        self.init_result_path(modelType, datasetName)
         self.__tspInstance = TSPInstance(dirpath, datasetName)
         if modelType == "PSO":
             self.__model = PSO(self.__tspInstance)
@@ -22,7 +26,7 @@ class Evaluation(object):
             self.draw_path("PSO", self.__model.location[self.__model.best_path])
             self.draw_path("OPT", array[self.__tspInstance.optimaltour])
             self.get_time(start, end)
-            self.draw_iter("PSO", self.__model.iter_x, self.__model.iter_y)
+            self.draw_quality("PSO", self.__model.iter_x, self.__model.iter_y)
             # self.draw_path("OPT", self.__tspInstance.get_distance_graph)
         elif modelType == "ACO":
             print("ACO")
@@ -44,6 +48,7 @@ class Evaluation(object):
         axs.set_title(title)
         plt.show()
 
+    # todo: use timer decorater rather than this function, recommend delete this
     def get_time(self, start, end):
         """
                 程序运行时间
@@ -53,13 +58,35 @@ class Evaluation(object):
          """
         assert (start <= end)
         print("程序运行时间：%.2fs" % (end - start))
-        plt.show()
 
-    def draw_iter(self, title, iterations, best_record):
+    def draw_quality(self, title, iterations, quality):
+        """
+        Args:
+            title (str): title for the image
+            iterations (list): epochs 
+            quality (list): current distance / optimal distance
+        """
         fig, axs = plt.subplots(1, 1, sharex=False, sharey=False)
-        axs.plot(iterations, best_record)
+        axs.plot(iterations, quality)
         axs.set_title(title)
         plt.show()
+        plt.savefig(filepath + dataset + '.png', bbox_inches='tight')
+
+    def init_result_path(self, model, dataset):
+        """
+        init path for result, if not exist, then create it
+        expect path as ./result/dataset/model 
+
+        Args:
+            model (_type_): model name 
+            dataset (_type_): dataset name
+        """
+        if not os.path.exists('./result/' + dataset):
+            os.mkdir('./result/' + dataset)
+        if not os.path.exists('./result/' + dataset + "/" + model):
+            os.mkdir('./result/' + dataset + "/" + model)
+        self.result_path = './result/' + dataset + "/" + model +"/"
+
 
 
 if __name__ == "__main__":
