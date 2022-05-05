@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from TSPInstance import TSPInstance
-from utils import draw_quality
+from utils import draw_quality, timer
 
 
 class PSO(object):
@@ -12,9 +12,12 @@ class PSO(object):
         self.__tspInstance = tsp
         self.num_city = self.__tspInstance.city_num  # 城市数
         self.location = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))  # 城市的位置坐标
-        self.iter_max = 500  # 迭代数目
-        self.num = 200  # 粒子数目
+        self.iter_max = 5000  # 迭代数目
+        self.num = 2000  # 粒子数目
         self.__iter=self.iter_max
+        self.epoch = []  # 指定的epoch
+        self.paths = []  # 指定epoch对应的tour，作画图用
+
         # 计算距离矩阵
         self.dis_mat = self.compute_dis_mat(self.num_city, self.location)  # 计算城市之间的距离矩阵
 
@@ -162,7 +165,7 @@ class PSO(object):
 
     # 迭代操作
     def pso(self):
-        for cnt in range(1, self.iter_max):
+        for cnt in range(1, self.iter_max+1):
             # 更新粒子群
             for i, one in enumerate(self.particals):
                 tmp_l = self.lenths[i]
@@ -206,14 +209,22 @@ class PSO(object):
             if self.global_best_len < self.best_l:
                 self.best_l = self.global_best_len
                 self.best_path = self.global_best
-            print(cnt, self.best_l)
+            # print(cnt, self.best_l)
+            if cnt % 10 == 0 or (cnt < 20 and cnt % 4 == 0):
+                self.epoch.append(cnt)
+                self.paths.append( self.global_best )
+                # self.__tspInstance.plot_tour(
+                #     tour=best_path, name='@Epoch ' + str(epoch))
+                print("-"*20 + " epoch " + str(cnt) + "-"*20)
+                print('quality: {}'.format(self.best_l))
+
             self.iter_x.append(cnt)
             self.iter_y.append(self.best_l)
         return self.best_l, self.best_path
 
-    def run(self):
+    @timer
+    def run(self,result_path):
         best_length, best_path = self.pso()
-        # 画出最终路径
         return self.location[best_path], best_length
 
 

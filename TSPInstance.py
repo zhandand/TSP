@@ -165,6 +165,7 @@ class TSPInstance(object):
         plt.savefig('./result/' + self.datasetName + '/' +
                     name + '.png', bbox_inches='tight')
         plt.cla()
+        plt.close()
 
 
 if __name__ == "__main__":

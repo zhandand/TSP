@@ -1,6 +1,3 @@
-import timeit
-
-from async_timeout import sys
 
 from PSO import PSO
 from ACO import ACO
@@ -21,20 +18,18 @@ class Evaluation(object):
         if modelType == "PSO":
             self.__model = PSO(self.__tspInstance)
             # ! 建议在模型的run方法中使用timer装饰器
-            start = timeit.default_timer()
-            self.__model.run()
-            end = timeit.default_timer()
-            # Best_path, Best = self.__model.run()
-            array = np.transpose(
-                np.vstack((self.__tspInstance.x, self.__tspInstance.y)))
+            self.__model.run(self.result_path)
             self.evaluate_cost(self.__model.best_l,
                                self.__tspInstance.optTourDistance)
-            # ! 参数有变，调用时改一下
-            # self.draw_path(
-            #     "PSO", self.__model.location[self.__model.best_path])
-            # self.draw_path("OPT", array[self.__tspInstance.optimaltour])
-            self.get_time(start, end)
-            self.draw_quality("PSO", self.__model.iter_x, self.__model.iter_y)
+            assert len(self.__model.iter_y) != 0
+
+            self.draw_quality("PSO Quality", self.__model.iter_x, self.__model.iter_y/self.__tspInstance.optTourDistance)
+
+            for i in range( len( self.__model.epoch)  ):
+                self.draw_tour( self.__model.location[ self.__model.paths[i]],  "City access sequence @" + str(
+                    self.__model.epoch[i]),"@" + str(self.__model.epoch[i]))
+            self.draw_tour(
+                self.__model.location[self.__model.best_path], "City access sequence @best", "best")
             # self.draw_path("OPT", self.__tspInstance.get_distance_graph)
         elif modelType == "ACO":
             self.__model = ACO(self.__tspInstance)
@@ -84,10 +79,11 @@ class Evaluation(object):
         axs.scatter(tour[:, 0], tour[:, 1], s =10)
         axs.plot(tour[:, 0], tour[:, 1])
         axs.set_title(title)
-        plt.show()
         plt.savefig(self.result_path + '/' +
                     filename + '.png', bbox_inches='tight')
+        plt.show()#先save后show
         plt.cla()
+        plt.close()
 
     # todo: use timer decorater rather than this function, recommend delete this
     def get_time(self, start, end):
@@ -110,9 +106,10 @@ class Evaluation(object):
         fig, axs = plt.subplots(1, 1, sharex=False, sharey=False)
         axs.plot(iterations, quality)
         axs.set_title(title)
-        plt.show()
         plt.savefig(self.result_path + 'quality' + '.png', bbox_inches='tight')
+        plt.show()
         plt.cla()
+        plt.close()
 
     def init_result_path(self, model, dataset):
         """
@@ -132,8 +129,8 @@ class Evaluation(object):
 
 if __name__ == "__main__":
     # evaluator = Evaluation(datasetName='st70', modelType="PSO")
-    # datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
-    # 'kroC100', 'kroD100','st70']
-    datasets = ['att48']
+    datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
+    'kroC100', 'kroD100','st70']
+    # datasets = ['att48']
     for dataset in datasets:
-        evaluator = Evaluation(datasetName=dataset, modelType="ACO")
+        evaluator = Evaluation(datasetName=dataset, modelType="PSO")
