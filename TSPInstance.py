@@ -39,10 +39,15 @@ class TSPInstance(object):
             data = f.readlines()
         self.x = []
         self.y = []
-        for line in data[6:-1]:
-            points = line.split()
-            self.x.append(float(points[1]))
-            self.y.append(float(points[2]))
+        prefixEnd = False
+        for line in data[:-1]:
+            if line == 'NODE_COORD_SECTION\n':
+                prefixEnd = True
+                continue
+            if prefixEnd == True:
+                points = line.split()
+                self.x.append(float(points[1]))
+                self.y.append(float(points[2]))
         self.x = np.array(self.x)
         self.y = np.array(self.y)
         assert self.x.shape == self.y.shape
