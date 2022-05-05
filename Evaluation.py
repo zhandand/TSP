@@ -38,7 +38,7 @@ class Evaluation(object):
             # self.draw_path("OPT", self.__tspInstance.get_distance_graph)
         elif modelType == "ACO":
             self.__model = ACO(self.__tspInstance)
-            self.__model.run()
+            self.__model.run(self.result_path)
 
             assert len(self.__model.quality) != 0
             assert len(self.__model.epoch) == len(self.__model.paths)
@@ -68,7 +68,7 @@ class Evaluation(object):
         """
         str = "估计最小的总代价: %.2f 目前最优的总代价: %.2f 最佳quality: %.2f " % (cur, opt, cur / opt)
         print(str)
-        with open(self.result_path + '/ log.txt', mode='w', encoding='utf-8') as f:
+        with open(self.result_path + '/log.txt', mode='a+', encoding='utf-8') as f:
             f.write(str)
 
     def draw_tour(self, tour, title, filename):
@@ -132,7 +132,8 @@ class Evaluation(object):
 
 if __name__ == "__main__":
     # evaluator = Evaluation(datasetName='st70', modelType="PSO")
-    datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
-    'kroC100', 'kroD100','st70']
+    # datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
+    # 'kroC100', 'kroD100','st70']
+    datasets = ['att48']
     for dataset in datasets:
         evaluator = Evaluation(datasetName=dataset, modelType="ACO")

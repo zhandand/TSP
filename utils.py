@@ -30,5 +30,8 @@ def timer(func):
         time_end = time()
         time_spend = time_end - time_start
         print('cost time {:.2f} s\n'.format(time_spend))
+        result_path = args[1]
+        with open(result_path + '/log.txt', mode='a+', encoding='utf-8') as f:
+            f.write('cost time {:.2f} s\n'.format(time_spend))
         return result
     return func_wrapper

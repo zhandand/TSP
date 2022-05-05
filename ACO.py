@@ -196,7 +196,7 @@ class ACO(object):
                 Ant(self.__tspInstance.city_num, self.__alpha, self.__beta, self.__Q))
 
     @timer
-    def run(self):
+    def run(self, result_path):
         for epoch in tqdm(range(1, self.__iter+1)):
             best_path = None
             shortest_distance = math.inf
