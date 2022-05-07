@@ -146,17 +146,17 @@ class TSPInstance(object):
         # plot the dots
         for i in range(self.city_num):
             x0, y0 = self.__getitem__(i)
-            plt.scatter(int(x0), int(y0), s=10, c='c')
+            plt.scatter(int(x0), int(y0), s=10)
         # connect the dots
         for i in range(len(tour)-1):
             x1, y1 = self.__getitem__(int(tour[i]))
             x, y = self.__getitem__(int(tour[i+1]))
-            plt.plot([x1, x], [y1, y], c='b')
+            plt.plot([x1, x], [y1, y])
         # form a circle
         x2, y2 = self.__getitem__(int(tour[0]))
         x3, y3 = self.__getitem__(int(tour[len(tour)-1]))
 
-        plt.plot([x2, x3], [y2, y3], c='b')
+        plt.plot([x2, x3], [y2, y3])
         plt.xlabel('x')
         plt.ylabel('y')
         plt.title("City access sequence @" + name)
