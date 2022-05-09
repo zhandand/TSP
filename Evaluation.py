@@ -50,9 +50,21 @@ class Evaluation(object):
 
             self.draw_tour(
                 coordinates[self.__model.paths[i]], "City access sequence @best", "best")
-        elif modelType == "Annealing":
-            # todo: write your program here
-            pass
+        elif modelType == "SA":
+            self.__model = SA(self.__tspInstance)
+            # ! 建议在模型的run方法中使用timer装饰器
+            self.__model.run()
+            self.evaluate_cost(self.__model.best_length,
+                               self.__tspInstance.optTourDistance)
+
+            self.draw_quality("SA Quality", self.__model.iter_x, self.__model.iter_y/self.__tspInstance.optTourDistance)
+
+            for i in range( len( self.__model.iter)  ):
+                self.draw_tour( self.__model.location[ self.__model.paths[i]],  "City access sequence @" + str(
+                    self.__model.iter[i]),"@" + str(self.__model.iter[i]))
+            self.draw_tour(
+                self.__model.location[self.__model.best_path], "City access sequence @best", "best")
+
 
     def evaluate_cost(self, cur, opt):
         """
