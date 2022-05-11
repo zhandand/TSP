@@ -12,17 +12,16 @@ class PSO(object):
         self.__tspInstance = tsp
         self.num_city = self.__tspInstance.city_num  # 城市数
         self.location = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))  # 城市的位置坐标
-        self.iter_max = 5000  # 迭代数目
-        self.num = 2000  # 粒子数目
-        self.__iter=self.iter_max
+        self.iter_max = 1500  # 迭代数目
+        self.num = 300  # 粒子数目
+        self.__iter = self.iter_max
         self.epoch = []  # 指定的epoch
         self.paths = []  # 指定epoch对应的tour，作画图用
 
         # 计算距离矩阵
-        self.dis_mat = self.compute_dis_mat(self.num_city, self.location)  # 计算城市之间的距离矩阵
+        self.dis_mat = self.__tspInstance.distance_graph  # 计算城市之间的距离矩阵
 
         # 初始化所有粒子
-        # self.particals = self.random_init(self.num, num_city)
         self.particals = self.greedy_init(self.dis_mat, num_total=self.num, num_city=self.num_city)
         self.lenths = self.compute_paths(self.particals)
         # 得到初始化群体的最优解
@@ -72,29 +71,6 @@ class PSO(object):
             result.append(result_one)
             start_index += 1
         return result
-
-    # 随机初始化
-    def random_init(self, num_total, num_city):
-        tmp = [x for x in range(num_city)]
-        result = []
-        for i in range(num_total):
-            random.shuffle(tmp)
-            result.append(tmp.copy())
-        return result
-
-    # 计算不同城市之间的距离
-    def compute_dis_mat(self, num_city, location):
-        dis_mat = np.zeros((num_city, num_city))
-        for i in range(num_city):
-            for j in range(num_city):
-                if i == j:
-                    dis_mat[i][j] = np.inf
-                    continue
-                a = location[i]
-                b = location[j]
-                tmp = np.sqrt(sum([(x[0] - x[1]) ** 2 for x in zip(a, b)]))
-                dis_mat[i][j] = tmp
-        return dis_mat
 
     # 计算一条路径的长度
     def compute_pathlen(self, path, dis_mat):
@@ -165,7 +141,7 @@ class PSO(object):
 
     # 迭代操作
     def pso(self):
-        for cnt in range(1, self.iter_max+1):
+        for cnt in range(0, self.iter_max):
             # 更新粒子群
             for i, one in enumerate(self.particals):
                 tmp_l = self.lenths[i]
@@ -175,7 +151,7 @@ class PSO(object):
                     self.best_l = tmp_l
                     self.best_path = one
 
-                if new_l < tmp_l or np.random.rand() < 0.1:
+                if new_l < tmp_l or np.random.rand() < 0.2:
                     one = new_one
                     tmp_l = new_l
 
@@ -186,7 +162,7 @@ class PSO(object):
                     self.best_l = tmp_l
                     self.best_path = one
 
-                if new_l < tmp_l or np.random.rand() < 0.1:
+                if new_l < tmp_l or np.random.rand() < 0.2:
                     one = new_one
                     tmp_l = new_l
                 # 变异
@@ -196,7 +172,7 @@ class PSO(object):
                     self.best_l = tmp_l
                     self.best_path = one
 
-                if new_l < tmp_l or np.random.rand() < 0.1:
+                if new_l < tmp_l or np.random.rand() < 0.2:
                     one = new_one
                     tmp_l = new_l
 
@@ -210,12 +186,12 @@ class PSO(object):
                 self.best_l = self.global_best_len
                 self.best_path = self.global_best
             # print(cnt, self.best_l)
-            if cnt % 10 == 0 or (cnt < 20 and cnt % 4 == 0):
+            if cnt % 100 == 0:
                 self.epoch.append(cnt)
-                self.paths.append( self.global_best )
+                self.paths.append(self.global_best)
                 # self.__tspInstance.plot_tour(
                 #     tour=best_path, name='@Epoch ' + str(epoch))
-                print("-"*20 + " epoch " + str(cnt) + "-"*20)
+                print("-" * 20 + " epoch " + str(cnt) + "-" * 20)
                 print('quality: {}'.format(self.best_l))
 
             self.iter_x.append(cnt)
@@ -223,14 +199,14 @@ class PSO(object):
         return self.best_l, self.best_path
 
     @timer
-    def run(self,result_path):
+    def run(self, result_path):
         best_length, best_path = self.pso()
         return self.location[best_path], best_length
 
 
 if __name__ == "__main__":
     pso = PSO()
-    Best_path, Best =pso.run()
+    Best_path, Best = pso.run()
     Best_path = np.vstack([Best_path, Best_path[0]])
     fig, axs = plt.subplots(2, 1, sharex=False, sharey=False)
     axs[0].scatter(Best_path[:, 0], Best_path[:, 1])
