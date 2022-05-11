@@ -141,7 +141,7 @@ class Evaluation(object):
 
 if __name__ == "__main__":
     # evaluator = Evaluation(datasetName='st70', modelType="PSO")
-    datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
+    datasets = [ 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'kroA100',
     'kroC100', 'kroD100','st70']
     # datasets = ['att48']
     for dataset in datasets:
