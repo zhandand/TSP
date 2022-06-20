@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from TSPInstance import TSPInstance
 
 
-
 class SA(object):
     def __init__(self, tsp):
         # 传入数据集
@@ -22,12 +21,13 @@ class SA(object):
         # 城市数量
         self.num_city = self.__tspInstance.city_num
         self.scores = []
-        self.location = np.transpose(np.vstack((self.__tspInstance.x, self.__tspInstance.y)))
+        self.location = np.transpose(
+            np.vstack((self.__tspInstance.x, self.__tspInstance.y)))
         # fruits中存每一个个体是下标的list
         self.fires = []
         # 计算不同城市之间的距离
         self.dis_mat = self.compute_dis_mat(self.num_city, self.location)
-        self.fire = self.greedy_init(self.dis_mat,100,self.num_city)
+        self.fire = self.greedy_init(self.dis_mat, 100, self.num_city)
         # 显示初始化后的路径
         init_pathlen = 1. / self.compute_pathlen(self.fire)
         init_best = self.location[self.fire]
@@ -42,11 +42,8 @@ class SA(object):
         # 指定epoch对应的tour，作画图用
         self.paths = []
 
-
-
-
-
     # 贪婪的初始化一条初始路径
+
     def greedy_init(self, dis_mat, num_total, num_city):
         start_index = 0
         result = []
@@ -185,6 +182,5 @@ class SA(object):
         start = time.time()
         self.best_length, self.best_path = self.sa()
         end = time.time()
-        print("time:%fs"%(end-start))
+        print("time:%fs" % (end-start))
         return self.best_length, self.best_path
-

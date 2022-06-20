@@ -9,7 +9,7 @@ import numpy as np
 
 
 class TSPInstance(object):
-    def __init__(self, dirpath, datasetName) -> None:
+    def __init__(self, dirpath, datasetName):
         """
         约定数据集文件名为 datasetName + '.txt'
             对应最佳结果文件名为 datasetName + '.opt.txt'

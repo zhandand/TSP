@@ -26,19 +26,23 @@ class Ant(object):
     __Q = 1.0
     __city_num = 0
 
-    def __init__(self, city_num, ALPHA, BETA, Q) -> None:
+    def __init__(self, city_num, ALPHA, BETA, Q):
         super().__init__()
         Ant.setHyperparameter(city_num, ALPHA, BETA, Q)
         self.__initialize()
 
     def __initialize(self):
+        # 随机初始化城市
         self.__current_city = random.randint(
-            0, Ant.get_city_num()-1)       # 随机初始化城市
-        self.__path = [self.__current_city]                         # ant的轨迹
+            0, Ant.get_city_num()-1)       
+        # ant的轨迹
+        self.__path = [self.__current_city]                         
         self.__total_distance = 0.0
-        self.__step = 1                                           # 移动次数
+        # 移动次数
+        self.__step = 1                                        
+        # 未访问城市   
         self.__avaliable_city = [
-            True for i in range(Ant.get_city_num())]   # 未访问城市
+            True for i in range(Ant.get_city_num())]  
         self.__avaliable_city[self.__current_city] = False
 
     @classmethod
@@ -105,8 +109,9 @@ class Ant(object):
                         ID=self.ID, current=self.__current_city, target=i))
                     sys.exit(1)
         select_cities_prob = np.array(select_cities_prob)
+        # normalization
         select_cities_prob = select_cities_prob / \
-            np.sum(select_cities_prob)  # normalization
+            np.sum(select_cities_prob)  
         next_city = self.__rand_choose(select_cities_prob)
         return next_city
 
@@ -164,27 +169,35 @@ class Ant(object):
 
 
 class ACO(object):
-    def __init__(self, tspInstance) -> None:
+    def __init__(self, tspInstance) :
         self.__tspInstance = tspInstance
 
         self.__iter = 150
-        self.__ant_num = 50   # the number of ants
-        self.__alpha = 2      # Pheromone importance factor
-        self.__beta = 2       # Important factor of heuristic function
-        self.__rho = 0.1      # Pheromone volatilization factor
+        # the number of ants
+        self.__ant_num = 50   
+        # Pheromone importance factor
+        self.__alpha = 2      
+        # Important factor of heuristic function
+        self.__beta = 2      
+        # Pheromone volatilization factor 
+        self.__rho = 0.1      
         self.__Q = 100.0
         self.__generate_ants_population()
 
         self.__city_num = len(self.__tspInstance.get_distance_graph())
+        # 全0初始化会在轮盘赌时出错
         self.__pheromone_graph = np.ones(
-            [self.__city_num, self.__city_num])    # 全0初始化会在轮盘赌时出错
+            [self.__city_num, self.__city_num])    
         # 每一轮迭代的current distance / optimal distance
         self.quality = []
-        self.global_opt_distance = math.inf         # 所有epoch中最短距离
-        self.global_opt_path = None                # 所有epoch中最好的path
-
-        self.epoch = []             # 指定的epoch
-        self.paths = []             # 指定epoch对应的tour，作画图用
+        # 所有epoch中最短距离
+        self.global_opt_distance = math.inf         
+        # 所有epoch中最好的path
+        self.global_opt_path = None                
+        # 指定的epoch
+        self.epoch = []            
+        # 指定epoch对应的tour，作画图用
+        self.paths = []             
 
     def __generate_ants_population(self):
         """
