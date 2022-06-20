@@ -1,4 +1,3 @@
-
 from PSO import PSO
 from ACO import ACO
 from TSPInstance import TSPInstance
@@ -23,11 +22,12 @@ class Evaluation(object):
                                self.__tspInstance.optTourDistance)
             assert len(self.__model.iter_y) != 0
 
-            self.draw_quality("PSO Quality", self.__model.iter_x, self.__model.iter_y/self.__tspInstance.optTourDistance)
+            self.draw_quality("PSO Quality", self.__model.iter_x,
+                              self.__model.iter_y / self.__tspInstance.optTourDistance)
 
-            for i in range( len( self.__model.epoch)  ):
-                self.draw_tour( self.__model.location[ self.__model.paths[i]],  "City access sequence @" + str(
-                    self.__model.epoch[i]),"@" + str(self.__model.epoch[i]))
+            for i in range(len(self.__model.epoch)):
+                self.draw_tour(self.__model.location[self.__model.paths[i]], "City access sequence @" + str(
+                    self.__model.epoch[i]), "@" + str(self.__model.epoch[i]))
             self.draw_tour(
                 self.__model.location[self.__model.best_path], "City access sequence @best", "best")
             # self.draw_path("OPT", self.__tspInstance.get_distance_graph)
@@ -57,14 +57,14 @@ class Evaluation(object):
             self.evaluate_cost(self.__model.best_length,
                                self.__tspInstance.optTourDistance)
 
-            self.draw_quality("SA Quality", self.__model.iter_x, self.__model.iter_y/self.__tspInstance.optTourDistance)
+            self.draw_quality("SA Quality", self.__model.iter_x,
+                              self.__model.iter_y / self.__tspInstance.optTourDistance)
 
-            for i in range( len( self.__model.iter)  ):
-                self.draw_tour( self.__model.location[ self.__model.paths[i]],  "City access sequence @" + str(
-                    self.__model.iter[i]),"@" + str(self.__model.iter[i]))
+            for i in range(len(self.__model.iter)):
+                self.draw_tour(self.__model.location[self.__model.paths[i]], "City access sequence @" + str(
+                    self.__model.iter[i]), "@" + str(self.__model.iter[i]))
             self.draw_tour(
                 self.__model.location[self.__model.best_path], "City access sequence @best", "best")
-
 
     def evaluate_cost(self, cur, opt):
         """
@@ -88,12 +88,12 @@ class Evaluation(object):
         """
         tour = np.vstack([tour, tour[0]])  # 形成回路
         fig, axs = plt.subplots(1, 1, sharex=False, sharey=False)
-        axs.scatter(tour[:, 0], tour[:, 1], s =10)
+        axs.scatter(tour[:, 0], tour[:, 1], s=10)
         axs.plot(tour[:, 0], tour[:, 1])
         axs.set_title(title)
         plt.savefig(self.result_path + '/' +
                     filename + '.png', bbox_inches='tight')
-        plt.show()#先save后show
+        plt.show()  # 先save后show
         plt.cla()
         plt.close()
 
@@ -141,8 +141,8 @@ class Evaluation(object):
 
 if __name__ == "__main__":
     # evaluator = Evaluation(datasetName='st70', modelType="PSO")
-    datasets = ['att48', 'a280', 'berlin52', 'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'gr96', 'gr202', 'gr666', 'kroA100',
-    'kroC100', 'kroD100','st70']
-    # datasets = ['att48']
+    datasets = ['berlin52','a280',  'ch130', 'ch150', 'eil51', 'eil76', 'eil101', 'kroA100',
+                'kroC100', 'kroD100', 'st70']
+    # datasets = ['berlin52']
     for dataset in datasets:
         evaluator = Evaluation(datasetName=dataset, modelType="PSO")
